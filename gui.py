@@ -19,56 +19,59 @@ class App(tk.Tk):
         self.create_widgets()
 
     def create_widgets(self):
-        self.question_label = ttk.Label(self, text="")
-        self.question_label.pack(pady=10)
+        # Create a canvas and a vertical scrollbar for scrolling the frame
+        self.canvas = tk.Canvas(self)
+        self.scrollbar = ttk.Scrollbar(self, orient="vertical", command=self.canvas.yview)
+        self.scrollable_frame = ttk.Frame(self.canvas)
 
-        self.answer_entry = ttk.Entry(self)
-        self.answer_entry.pack(pady=10)
+        self.scrollable_frame.bind(
+            "<Configure>",
+            lambda e: self.canvas.configure(
+                scrollregion=self.canvas.bbox("all")
+            )
+        )
 
-        self.submit_button = ttk.Button(self, text="Submit", command=self.submit_answer)
-        self.submit_button.pack(pady=10)
+        self.canvas.create_window((0, 0), window=self.scrollable_frame, anchor="nw")
+        self.canvas.configure(yscrollcommand=self.scrollbar.set)
+
+        self.canvas.pack(side="left", fill="both", expand=True)
+        self.scrollbar.pack(side="right", fill="y")
+
+        self.inputs = {}
+        questions = self.get_questions()
+
+        for question_id, question_text in questions.items():
+            label = ttk.Label(self.scrollable_frame, text=question_text)
+            label.pack(anchor="w", padx=10, pady=5)
+            entry = ttk.Entry(self.scrollable_frame, width=100)
+            entry.pack(anchor="w", padx=10, pady=2, fill="x")
+            self.inputs[question_id] = entry
+
+        self.run_button = ttk.Button(self, text="Run Analysis", command=self.run_analysis)
+        self.run_button.pack(pady=10)
 
         self.recommendation_text = tk.Text(self, wrap="word")
         self.recommendation_text.pack(fill="both", expand=True)
 
+    def get_questions(self):
+        questions = {}
+        for fact in self.engine.facts.values():
+            if isinstance(fact, Question):
+                questions[fact['id']] = fact['text']
+        return questions
+
+    def run_analysis(self):
         self.engine.reset()
-        self.ask_next_question()
 
-    def ask_next_question(self):
+        for question_id, entry in self.inputs.items():
+            answer = entry.get()
+            question = self.get_question_by_id(question_id)
+            if answer and question:
+                validated_answer = self.engine.is_of_type(answer, question['Type'], question['valid'])
+                if validated_answer is not None:
+                    self.engine.declare(Answer(id=question_id, text=validated_answer))
+
         self.engine.run()
-        for fact_index in self.engine.facts:
-            fact = self.engine.facts[fact_index]
-            if isinstance(fact, Fact) and fact.as_dict().get('__type__') == 'ask':
-                question_id = fact.as_dict()['value']
-                for q_fact_index in self.engine.facts:
-                    q_fact = self.engine.facts[q_fact_index]
-                    if isinstance(q_fact, Question) and q_fact['id'] == question_id:
-                        self.question_label.config(text=q_fact['text'])
-                        return
-        self.display_recommendations()
-
-    def submit_answer(self):
-        answer = self.answer_entry.get()
-        for fact_index in self.engine.facts:
-            fact = self.engine.facts[fact_index]
-            if isinstance(fact, Fact) and fact.as_dict().get('__type__') == 'ask':
-                question_id = fact.as_dict()['value']
-                for q_fact_index in self.engine.facts:
-                    q_fact = self.engine.facts[q_fact_index]
-                    if isinstance(q_fact, Question) and q_fact['id'] == question_id:
-                        validated_answer = self.engine.is_of_type(answer, q_fact['Type'], q_fact['valid'])
-                        if validated_answer is not None:
-                            self.engine.declare(Answer(id=question_id, text=validated_answer))
-                            self.answer_entry.delete(0, 'end')
-                            self.ask_next_question()
-                        else:
-                            self.question_label.config(text="Invalid input. Please try again.\n" + q_fact['text'])
-                        return
-
-    def display_recommendations(self):
-        self.question_label.config(text="Analysis Complete")
-        self.answer_entry.pack_forget()
-        self.submit_button.pack_forget()
 
         self.recommendation_text.delete("1.0", "end")
         for fact in self.engine.facts.values():
@@ -76,6 +79,12 @@ class App(tk.Tk):
                 self.recommendation_text.insert("end", fact["recommendation"] + "\n")
             elif isinstance(fact, Prediction):
                 self.recommendation_text.insert("end", f"Prediction: {fact['text']} (CF: {fact['cf']})\n")
+
+    def get_question_by_id(self, question_id):
+        for fact in self.engine.facts.values():
+            if isinstance(fact, Question) and fact['id'] == question_id:
+                return fact
+        return None
 
 if __name__ == "__main__":
     app = App()
