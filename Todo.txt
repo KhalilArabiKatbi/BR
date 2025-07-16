@@ -1,0 +1,7 @@
+continue the percentage questions and the declaration of the deffects (Done)
+modify fact of deffect number if num of deffacts less than total deffacts (Done)
+validation rules for retract and reask (some done)
+certainity factor for rules (certainity factor is based on the number of deffect of this type over the number of all deffects
+ and we will make use of that for giving the best recommendation for the day)
+salience (some done)
+Flowchart
