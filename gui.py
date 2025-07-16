@@ -19,47 +19,46 @@ class App(tk.Tk):
         self.create_widgets()
 
     def create_widgets(self):
-        self.input_frame = ttk.Frame(self)
-        self.input_frame.pack(side="left", fill="y", padx=10, pady=10)
+        self.question_label = ttk.Label(self, text="")
+        self.question_label.pack(pady=10)
 
-        self.output_frame = ttk.Frame(self)
-        self.output_frame.pack(side="right", fill="both", expand=True, padx=10, pady=10)
+        self.answer_entry = ttk.Entry(self)
+        self.answer_entry.pack(pady=10)
 
-        self.inputs = {}
-        questions = self.get_questions()
+        self.submit_button = ttk.Button(self, text="Submit", command=self.submit_answer)
+        self.submit_button.pack(pady=10)
 
-        for question_id, question_text in questions.items():
-            label = ttk.Label(self.input_frame, text=question_text)
-            label.pack(anchor="w")
-            entry = ttk.Entry(self.input_frame)
-            entry.pack(anchor="w", fill="x", pady=2)
-            self.inputs[question_id] = entry
-
-        self.run_button = ttk.Button(self.input_frame, text="Run Analysis", command=self.run_analysis)
-        self.run_button.pack(pady=10)
-
-        self.recommendation_text = tk.Text(self.output_frame, wrap="word")
+        self.recommendation_text = tk.Text(self, wrap="word")
         self.recommendation_text.pack(fill="both", expand=True)
 
-    def get_questions(self):
-        questions = {}
-        for fact in self.engine.facts.values():
-            if isinstance(fact, Question):
-                questions[fact['id']] = fact['text']
-        return questions
-
-    def run_analysis(self):
         self.engine.reset()
+        self.ask_next_question()
 
-        for question_id, entry in self.inputs.items():
-            answer = entry.get()
-            question = self.get_question_by_id(question_id)
-            if answer and question:
-                validated_answer = self.engine.is_of_type(answer, question['Type'], question['valid'])
-                if validated_answer is not None:
-                    self.engine.declare(Answer(id=question_id, text=validated_answer))
-
+    def ask_next_question(self):
         self.engine.run()
+        for fact in self.engine.facts.values():
+            if isinstance(fact, Question) and 'ask' in self.engine.facts and self.engine.facts['ask']['value'] == fact['id']:
+                self.question_label.config(text=fact['text'])
+                return
+        self.display_recommendations()
+
+    def submit_answer(self):
+        answer = self.answer_entry.get()
+        for fact in self.engine.facts.values():
+            if isinstance(fact, Question) and 'ask' in self.engine.facts and self.engine.facts['ask']['value'] == fact['id']:
+                validated_answer = self.engine.is_of_type(answer, fact['Type'], fact['valid'])
+                if validated_answer is not None:
+                    self.engine.declare(Answer(id=fact['id'], text=validated_answer))
+                    self.answer_entry.delete(0, 'end')
+                    self.ask_next_question()
+                else:
+                    self.question_label.config(text="Invalid input. Please try again.\n" + fact['text'])
+                return
+
+    def display_recommendations(self):
+        self.question_label.config(text="Analysis Complete")
+        self.answer_entry.pack_forget()
+        self.submit_button.pack_forget()
 
         self.recommendation_text.delete("1.0", "end")
         for fact in self.engine.facts.values():
@@ -67,12 +66,6 @@ class App(tk.Tk):
                 self.recommendation_text.insert("end", fact["recommendation"] + "\n")
             elif isinstance(fact, Prediction):
                 self.recommendation_text.insert("end", f"Prediction: {fact['text']} (CF: {fact['cf']})\n")
-
-    def get_question_by_id(self, question_id):
-        for fact in self.engine.facts.values():
-            if isinstance(fact, Question) and fact['id'] == question_id:
-                return fact
-        return None
 
 if __name__ == "__main__":
     app = App()
