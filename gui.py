@@ -36,24 +36,34 @@ class App(tk.Tk):
 
     def ask_next_question(self):
         self.engine.run()
-        for fact in self.engine.facts.values():
-            if isinstance(fact, Question) and 'ask' in self.engine.facts and self.engine.facts['ask']['value'] == fact['id']:
-                self.question_label.config(text=fact['text'])
-                return
+        for fact_index in self.engine.facts:
+            fact = self.engine.facts[fact_index]
+            if isinstance(fact, Fact) and fact.as_dict().get('__type__') == 'ask':
+                question_id = fact.as_dict()['value']
+                for q_fact_index in self.engine.facts:
+                    q_fact = self.engine.facts[q_fact_index]
+                    if isinstance(q_fact, Question) and q_fact['id'] == question_id:
+                        self.question_label.config(text=q_fact['text'])
+                        return
         self.display_recommendations()
 
     def submit_answer(self):
         answer = self.answer_entry.get()
-        for fact in self.engine.facts.values():
-            if isinstance(fact, Question) and 'ask' in self.engine.facts and self.engine.facts['ask']['value'] == fact['id']:
-                validated_answer = self.engine.is_of_type(answer, fact['Type'], fact['valid'])
-                if validated_answer is not None:
-                    self.engine.declare(Answer(id=fact['id'], text=validated_answer))
-                    self.answer_entry.delete(0, 'end')
-                    self.ask_next_question()
-                else:
-                    self.question_label.config(text="Invalid input. Please try again.\n" + fact['text'])
-                return
+        for fact_index in self.engine.facts:
+            fact = self.engine.facts[fact_index]
+            if isinstance(fact, Fact) and fact.as_dict().get('__type__') == 'ask':
+                question_id = fact.as_dict()['value']
+                for q_fact_index in self.engine.facts:
+                    q_fact = self.engine.facts[q_fact_index]
+                    if isinstance(q_fact, Question) and q_fact['id'] == question_id:
+                        validated_answer = self.engine.is_of_type(answer, q_fact['Type'], q_fact['valid'])
+                        if validated_answer is not None:
+                            self.engine.declare(Answer(id=question_id, text=validated_answer))
+                            self.answer_entry.delete(0, 'end')
+                            self.ask_next_question()
+                        else:
+                            self.question_label.config(text="Invalid input. Please try again.\n" + q_fact['text'])
+                        return
 
     def display_recommendations(self):
         self.question_label.config(text="Analysis Complete")
