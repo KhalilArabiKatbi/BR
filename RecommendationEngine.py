@@ -158,23 +158,13 @@ class RecommendationEngine(KnowledgeEngine):
     def ask_question_by_id(self, ask, id, text, valid, Type):
         # "Ask a question and assert the answer""
         self.retract(ask)
-        answer = self.ask_user(text, Type, valid)
-        self.declare(Answer(id=id, text=answer))
+        # answer = self.ask_user(text, Type, valid)
+        # self.declare(Answer(id=id, text=answer))
 
     # Useful functions
     def ask_user(self, question, Type, valid=None):
         # "Ask a question, and return the answer"
-        answer = ""
-        while True:
-            print(question)
-            answer = input()
-
-            ans = self.is_of_type(answer, Type, valid)
-            if ans != None:
-                answer = ans
-                break
-
-        return answer
+        return ""
 
     def is_of_type(self, answer, Type, valid):
         # "Check that the answer has the right form"
