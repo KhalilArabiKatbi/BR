@@ -99,7 +99,6 @@ class App(tk.Tk):
         if self.validate_answer(answer, question["type"]):
             self.answers[question["id"]] = answer
             self.update_graph()
-            self.run_engine_and_show_recommendations()
             self.current_question_index += 1
             self.entry.delete(0, tk.END)
             self.ask_next_question()
@@ -143,7 +142,7 @@ class App(tk.Tk):
             if key in defect_counts:
                 defect_counts[key] = int(value)
 
-        self.ax.bar(defect_counts.keys(), defect_counts.values(), color="#4A90E2")
+        self.ax.bar(list(defect_counts.keys()), list(defect_counts.values()), color="#4A90E2")
         self.ax.set_ylabel("Count", color="white")
         self.ax.set_title("Defective Biscuits", color="white")
         self.fig.tight_layout()
