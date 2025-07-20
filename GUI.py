@@ -93,12 +93,12 @@ class App(tk.Tk):
             self.summary_labels[metric] = value_label
 
         # Graph
-        self.fig = Figure(figsize=(10, 8), dpi=100, facecolor="#1E1E1E")
+        self.fig = Figure(figsize=(12, 10), dpi=100, facecolor="#1E1E1E")
         self.canvas = FigureCanvasTkAgg(self.fig, master=right_frame)
         self.canvas.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=True)
 
         # Recommendations
-        self.recommendation_text = tk.Text(right_frame, wrap="word", height=15, font=("Segoe UI", 12), bg="#3C3C3C", fg="#FFFFFF", borderwidth=0)
+        self.recommendation_text = tk.Text(right_frame, wrap="word", height=20, font=("Segoe UI", 14), bg="#3C3C3C", fg="#FFFFFF", borderwidth=0)
         self.recommendation_text.pack(padx=10, pady=10, fill=tk.BOTH, expand=True)
         self.recommendation_text.insert(tk.END, "Recommendations will appear here.")
         self.recommendation_text.config(state="disabled")
