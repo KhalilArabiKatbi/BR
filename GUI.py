@@ -8,6 +8,7 @@ class App(tk.Tk):
         super().__init__()
         self.title("Quality Control Recommendation System")
         self.geometry("800x600")
+        self.configure(bg="#2E2E2E")
 
         self.engine = RecommendationEngine()
         self.questions = [
@@ -36,13 +37,13 @@ class App(tk.Tk):
         self.current_question_index = 0
         self.answers = {}
 
-        self.question_label = tk.Label(self, text="", wraplength=780)
+        self.question_label = tk.Label(self, text="", wraplength=780, font=("Segoe UI", 14), bg="#2E2E2E", fg="#FFFFFF")
         self.question_label.pack(pady=20)
 
-        self.entry = tk.Entry(self)
+        self.entry = tk.Entry(self, font=("Segoe UI", 12), bg="#3C3C3C", fg="#FFFFFF", insertbackground="#FFFFFF", borderwidth=0)
         self.entry.pack(pady=10)
 
-        self.submit_button = tk.Button(self, text="Submit", command=self.submit_answer)
+        self.submit_button = tk.Button(self, text="Submit", command=self.submit_answer, font=("Segoe UI", 12, "bold"), bg="#4A90E2", fg="#FFFFFF", borderwidth=0, relief="flat", activebackground="#357ABD", activeforeground="#FFFFFF")
         self.submit_button.pack(pady=10)
 
         self.protocol("WM_DELETE_WINDOW", self.on_closing)
@@ -84,9 +85,11 @@ class App(tk.Tk):
 
         recommendation_window = tk.Toplevel(self)
         recommendation_window.title("Recommendations")
-        recommendation_text = tk.Text(recommendation_window, wrap="word", height=20, width=80)
+        recommendation_window.configure(bg="#2E2E2E")
+
+        recommendation_text = tk.Text(recommendation_window, wrap="word", height=20, width=80, font=("Segoe UI", 12), bg="#3C3C3C", fg="#FFFFFF", borderwidth=0)
         recommendation_text.pack(padx=10, pady=10)
-        recommendation_text.insert(tk.END, recommendations if recommendations else "No recommendations.")
+        recommendation_text.insert(tk.END, recommendations)
         recommendation_text.config(state="disabled")
 
         self.question_label.config(text="Analysis complete. See recommendations.")
