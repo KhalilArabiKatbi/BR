@@ -61,22 +61,21 @@ class App(tk.Tk):
         right_frame = tk.Frame(main_frame, bg="#2E2E2E")
         right_frame.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True, padx=20, pady=20)
 
-        # Graph
-        self.fig = Figure(figsize=(5, 4), dpi=100, facecolor="#2E2E2E")
-        self.ax = self.fig.add_subplot(111)
-        self.ax.set_facecolor("#3C3C3C")
-        self.ax.tick_params(axis='x', colors='white')
-        self.ax.tick_params(axis='y', colors='white')
-        self.ax.spines['bottom'].set_color('white')
-        self.ax.spines['top'].set_color('white')
-        self.ax.spines['right'].set_color('white')
-        self.ax.spines['left'].set_color('white')
+        # Graph frame
+        graph_frame = tk.Frame(right_frame, bg="#2E2E2E")
+        graph_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
 
-        self.canvas = FigureCanvasTkAgg(self.fig, master=right_frame)
+        # Recommendations frame
+        recommendation_frame = tk.Frame(right_frame, bg="#2E2E2E")
+        recommendation_frame.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True)
+
+        # Graph
+        self.fig = Figure(figsize=(8, 8), dpi=200, facecolor="#2E2E2E")
+        self.canvas = FigureCanvasTkAgg(self.fig, master=graph_frame)
         self.canvas.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=True)
 
         # Recommendations
-        self.recommendation_text = tk.Text(right_frame, wrap="word", height=10, width=80, font=("Segoe UI", 12), bg="#3C3C3C", fg="#FFFFFF", borderwidth=0)
+        self.recommendation_text = tk.Text(recommendation_frame, wrap="word", height=10, width=50, font=("Segoe UI", 12), bg="#3C3C3C", fg="#FFFFFF", borderwidth=0)
         self.recommendation_text.pack(padx=10, pady=10, fill=tk.BOTH, expand=True)
         self.recommendation_text.insert(tk.END, "Recommendations will appear here.")
         self.recommendation_text.config(state="disabled")
