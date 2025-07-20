@@ -1,4 +1,3 @@
-from collections.abc import Mapping
 from experta import *
 from MyFacts import *
 
