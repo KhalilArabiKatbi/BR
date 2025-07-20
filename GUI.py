@@ -137,9 +137,28 @@ class App(tk.Tk):
     def update_graph(self):
         self.fig.clear()
 
-        # Main donut chart
         gs = self.fig.add_gridspec(2, 2)
-        ax_main = self.fig.add_subplot(gs[:, 0])
+
+        # Donut chart
+        ax_donut = self.fig.add_subplot(gs[0, 0])
+        self.plot_donut(ax_donut)
+
+        # Bar chart
+        ax_bar = self.fig.add_subplot(gs[0, 1])
+        self.plot_bar(ax_bar)
+
+        # Sub-plots for defect severity
+        ax_cracked = self.fig.add_subplot(gs[1, 0])
+        self.plot_severity("cracked", ax_cracked)
+        ax_burned = self.fig.add_subplot(gs[1, 1])
+        self.plot_severity("burned", ax_burned)
+
+        self.fig.tight_layout()
+        self.canvas.draw()
+
+    def plot_donut(self, ax):
+        ax.set_title("Defect Proportions", color="white")
+        ax.set_facecolor("#2E2E2E")
 
         defect_counts = {
             "cracked": 0,
@@ -154,22 +173,31 @@ class App(tk.Tk):
                 defect_counts[key] = int(value)
 
         labels = defect_counts.keys()
-        sizes = defect_counts.values()
+        sizes = list(defect_counts.values())
         if sum(sizes) > 0:
-            ax_main.pie(sizes, labels=labels, autopct='%1.1f%%', startangle=90, colors=["#FF6384", "#36A2EB", "#FFCE56", "#4BC0C0", "#9966FF", "#FF9F40"], textprops={'color':"w"})
+            ax.pie(sizes, labels=labels, autopct='%1.1f%%', startangle=90, colors=["#FF6384", "#36A2EB", "#FFCE56", "#4BC0C0", "#9966FF", "#FF9F40"], textprops={'color':"w"})
             centre_circle = plt.Circle((0,0),0.70,fc='#2E2E2E')
-            ax_main.add_artist(centre_circle)
+            ax.add_artist(centre_circle)
 
-        ax_main.set_title("Defect Proportions", color="white")
+    def plot_bar(self, ax):
+        defect_counts = {
+            "cracked": 0,
+            "burned": 0,
+            "under_cooked": 0,
+            "over_sized": 0,
+            "under_sized": 0,
+            "contaminated": 0,
+        }
+        for key, value in self.answers.items():
+            if key in defect_counts:
+                defect_counts[key] = int(value)
 
-        # Sub-plots for defect severity
-        ax_cracked = self.fig.add_subplot(gs[0, 1])
-        self.plot_severity("cracked", ax_cracked)
-        ax_burned = self.fig.add_subplot(gs[1, 1])
-        self.plot_severity("burned", ax_burned)
-
-        self.fig.tight_layout()
-        self.canvas.draw()
+        ax.bar(list(defect_counts.keys()), list(defect_counts.values()), color="#4A90E2")
+        ax.set_ylabel("Count", color="white")
+        ax.set_title("Defective Biscuits", color="white")
+        ax.tick_params(axis='x', colors='white', rotation=45)
+        ax.tick_params(axis='y', colors='white')
+        ax.set_facecolor("#3C3C3C")
 
     def plot_severity(self, defect_type, ax):
         severities = {
