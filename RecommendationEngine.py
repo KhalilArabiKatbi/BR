@@ -778,7 +778,8 @@ class RecommendationEngine(KnowledgeEngine):
         )
 
     # Collect recommendations
-    @Rule(Fact(recommendation=MATCH.r), salience=-1000)
-    def collect_recommendation(self, r):
-        if r not in self.recommendations:
-            self.recommendations.append(r)
+    @Rule(Prediction(text=MATCH.t, cf=MATCH.c), Fact(recommendation=MATCH.r), salience=-1000)
+    def collect_recommendation(self, t, c, r):
+        recommendation = (f"{t} (CF: {c:.2f})", r)
+        if recommendation not in self.recommendations:
+            self.recommendations.append(recommendation)

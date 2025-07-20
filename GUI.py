@@ -4,6 +4,7 @@ from RecommendationEngine import RecommendationEngine
 from MyFacts import *
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+import matplotlib.pyplot as plt
 
 class App(tk.Tk):
     def __init__(self):
@@ -115,21 +116,31 @@ class App(tk.Tk):
         for fact_id, fact_value in self.answers.items():
             self.engine.declare(Answer(id=fact_id, text=fact_value))
         self.engine.run()
-        recommendations = "\n".join(self.engine.recommendations)
+        recommendations = self.engine.recommendations
         if not recommendations:
-            recommendations = "No recommendations."
-
-        self.recommendation_text.config(state="normal")
-        self.recommendation_text.delete(1.0, tk.END)
-        self.recommendation_text.insert(tk.END, recommendations)
-        self.recommendation_text.config(state="disabled")
+            self.recommendation_text.config(state="normal")
+            self.recommendation_text.delete(1.0, tk.END)
+            self.recommendation_text.insert(tk.END, "No recommendations.")
+            self.recommendation_text.config(state="disabled")
+        else:
+            self.recommendation_text.config(state="normal")
+            self.recommendation_text.delete(1.0, tk.END)
+            for prediction, recommendation in recommendations:
+                self.recommendation_text.insert(tk.END, f"{prediction}\n", ("bold",))
+                self.recommendation_text.insert(tk.END, f"{recommendation}\n\n")
+            self.recommendation_text.config(state="disabled")
 
         self.question_label.config(text="Analysis complete. See recommendations.")
         self.entry.pack_forget()
         self.submit_button.pack_forget()
 
     def update_graph(self):
-        self.ax.clear()
+        self.fig.clear()
+
+        # Main donut chart
+        gs = self.fig.add_gridspec(2, 2)
+        ax_main = self.fig.add_subplot(gs[:, 0])
+
         defect_counts = {
             "cracked": 0,
             "burned": 0,
@@ -142,11 +153,45 @@ class App(tk.Tk):
             if key in defect_counts:
                 defect_counts[key] = int(value)
 
-        self.ax.bar(list(defect_counts.keys()), list(defect_counts.values()), color="#4A90E2")
-        self.ax.set_ylabel("Count", color="white")
-        self.ax.set_title("Defective Biscuits", color="white")
+        labels = defect_counts.keys()
+        sizes = defect_counts.values()
+        if sum(sizes) > 0:
+            ax_main.pie(sizes, labels=labels, autopct='%1.1f%%', startangle=90, colors=["#FF6384", "#36A2EB", "#FFCE56", "#4BC0C0", "#9966FF", "#FF9F40"], textprops={'color':"w"})
+            centre_circle = plt.Circle((0,0),0.70,fc='#2E2E2E')
+            ax_main.add_artist(centre_circle)
+
+        ax_main.set_title("Defect Proportions", color="white")
+
+        # Sub-plots for defect severity
+        ax_cracked = self.fig.add_subplot(gs[0, 1])
+        self.plot_severity("cracked", ax_cracked)
+        ax_burned = self.fig.add_subplot(gs[1, 1])
+        self.plot_severity("burned", ax_burned)
+
         self.fig.tight_layout()
         self.canvas.draw()
+
+    def plot_severity(self, defect_type, ax):
+        severities = {
+            "severly": 0,
+            "moderate": 0,
+            "low": 0,
+        }
+        for key, value in self.answers.items():
+            if defect_type in key:
+                if "severly" in key:
+                    severities["severly"] = int(value)
+                elif "moderate" in key:
+                    severities["moderate"] = int(value)
+                elif "low" in key:
+                    severities["low"] = int(value)
+
+        ax.bar(severities.keys(), severities.values(), color=["#FF6384", "#FFCE56", "#36A2EB"])
+        ax.set_title(f"{defect_type.capitalize()} Severity", color="white")
+        ax.set_ylabel("Count", color="white")
+        ax.tick_params(axis='x', colors='white')
+        ax.tick_params(axis='y', colors='white')
+        ax.set_facecolor("#3C3C3C")
 
     def on_closing(self):
         if messagebox.askokcancel("Quit", "Do you want to quit?"):
