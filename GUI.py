@@ -28,7 +28,7 @@ class App(tk.Tk):
             {"id": "severly_under_cooked_count", "text": "How many severly under_cooked biscuits (>40%)?", "type": "int"},
             {"id": "moderate_under_cooked_count", "text": "How many moderate under_cooked biscuits(10%~40%)?", "type": "int"},
             {"id": "low_under_cooked_count", "text": "How many low under_cooked biscuits(<10%)?", "type": "int"},
-            {"id": "severly_over_sized_.count", "text": "How many biscuits have raduis greater than 4cm", "type": "int"},
+            {"id": "severely_over_sized_count", "text": "How many biscuits have raduis greater than 4cm", "type": "int"},
             {"id": "moderate_over_sized_count", "text": "How many biscuits have raduis between 3.5cm and 4cm?", "type": "int"},
             {"id": "moderate_under_sized_count", "text": "How many biscuits have raduis between 2.5cm and 3cm?", "type": "int"},
             {"id": "severly_under_sized_count", "text": "How many biscuits have raduis lower than 2.5cm?", "type": "int"},
@@ -76,11 +76,11 @@ class App(tk.Tk):
     def run_engine_and_show_recommendations(self):
         self.engine.reset()
         for fact_id, fact_value in self.answers.items():
-            self.engine.declare(Answer(id=fact_id, text=int(fact_value)))
-
+            self.engine.declare(Answer(id=fact_id, text=fact_value))
         self.engine.run()
-
         recommendations = "\n".join(self.engine.recommendations)
+        if not recommendations:
+            recommendations = "No recommendations."
 
         recommendation_window = tk.Toplevel(self)
         recommendation_window.title("Recommendations")

@@ -151,61 +151,6 @@ class RecommendationEngine(KnowledgeEngine):
             text="How many biscuits have radius lower than 2.5cm?",
         )
 
-    @Rule(
-        Question(id=MATCH.id, text=MATCH.text, valid=MATCH.valid, Type=MATCH.Type),
-        NOT(Answer(id=MATCH.id)),
-        AS.ask << Fact(ask=MATCH.id),
-    )
-    def ask_question_by_id(self, ask, id, text, valid, Type):
-        self.retract(ask)
-        answer = self.ask_user(text, Type, valid)
-        self.declare(Answer(id=id, text=answer))
-
-    # Useful functions
-    def ask_user(self, question, Type, valid=None):
-        answer = ""
-        while True:
-            print(question)
-            answer = input()
-
-            ans = self.is_of_type(answer, Type, valid)
-            if ans != None:
-                answer = ans
-                break
-
-        return answer
-
-    def is_of_type(self, answer, Type, valid):
-        ans = answer.strip().replace("%", "")
-        if Type == "input_string":
-            if ans in valid:
-                return ans
-        elif Type == "input_int":
-            return self.is_a_int(ans)
-        elif Type == "input_float":
-            return self.is_a_float(ans)
-        else:
-            return None
-
-    def is_a_int(self, answer):
-        try:
-            answer = int(answer)
-            if answer >= 0:
-                return answer
-            else:
-                return None
-        except:
-            return None
-
-    def is_a_float(self, answer):
-        try:
-            answer = float(answer)
-            if answer >= 0:
-                return answer
-            else:
-                return None
-        except:
-            return None
 
     # Input validation rules
     @Rule(NOT(Answer(id=L("total"))), NOT(Fact(ask=L("total"))))
