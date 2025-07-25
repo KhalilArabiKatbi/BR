@@ -6,6 +6,7 @@ import useAuthStore from './stores/authStore.jsx';
 import Login from './components/Auth/Login.jsx';
 import Logout from './components/Auth/Logout.jsx';
 import Loading from './components/Loading.jsx';
+import Test from './components/Test.jsx';
 import './App.css'
 
 
@@ -40,6 +41,7 @@ function App() {
         <Route element={<AdminRoutes />}>
           <Route path='/logout' element={<Logout />} />
         </Route>
+        <Route path="/test" element={<Test />} />
       </Routes>
     </BrowserRouter>
   );

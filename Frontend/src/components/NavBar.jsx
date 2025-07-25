@@ -49,6 +49,9 @@ const NavBar = () => {
               <li>
                 <a href="/home">home</a>
               </li>
+              <li>
+                <a href="/test">Test</a>
+              </li>
             </>}
           </div>
           <div className={styles.nav_links_right}>
